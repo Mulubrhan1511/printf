@@ -1,36 +1,46 @@
 #include "main.h"
 
 /**
- * printf_HEX_aux - prints an hexgecimal number.
- * @num: number to print.
- * Return: counter.
+ * _printf - is a function that selects the correct function to print.
+ * @format: identifier to look for.
+ * Return: the length of the string.
  */
-int printf_HEX_aux(unsigned int num)
+int _printf(const char * const format, ...)
 {
-	int i;
-	int *array;
-	int counter = 0;
-	unsigned int temp = num;
+	convert_match m[] = {
+		{"%s", printf_string}, {"%c", printf_char},
+		{"%%", printf_37},
+		{"%i", printf_int}, {"%d", printf_dec}, {"%r", printf_srev},
+		{"%R", printf_rot13}, {"%b", printf_bin}, {"%u", printf_unsigned},
+		{"%o", printf_oct}, {"%x", printf_hex}, {"%X", printf_HEX},
+		{"%S", printf_exclusive_string}, {"%p", printf_pointer}
+	};
 
-	while (num / 16 != 0)
-	{
-		num /= 16;
-		counter++;
-	}
-	counter++;
-	array = malloc(counter * sizeof(int));
+	va_list args;
+	int i = 0, j, len = 0;
 
-	for (i = 0; i < counter; i++)
+	va_start(args, format);
+	if (format == NULL || (format[0] == '%' && format[1] == '\0'))
+		return (-1);
+
+Here:
+	while (format[i] != '\0')
 	{
-		array[i] = temp % 16;
-		temp /= 16;
+		j = 13;
+		while (j >= 0)
+		{
+			if (m[j].id[0] == format[i] && m[j].id[1] == format[i + 1])
+			{
+				len += m[j].f(args);
+				i = i + 2;
+				goto Here;
+			}
+			j--;
+		}
+		_putchar(format[i]);
+		len++;
+		i++;
 	}
-	for (i = counter - 1; i >= 0; i--)
-	{
-		if (array[i] > 9)
-			array[i] = array[i] + 7;
-		_putchar(array[i] + '0');
-	}
-	free(array);
-	return (counter);
+	va_end(args);
+	return (len);
 }
